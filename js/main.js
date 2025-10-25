@@ -32,12 +32,18 @@
         if (event.target.classList.contains("link-item") && event.target.hash !== "") {
             event.preventDefault();
             const hash = event.target.hash;
-
+            
+            // Prevent automatic scrolling
+            let scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+            
             // Handle section switching
             document.querySelector(".section.active").classList.add("hide");
             document.querySelector(".section.active").classList.remove("active");
             document.querySelector(hash).classList.add("active");
             document.querySelector(hash).classList.remove("hide");
+            
+            // Maintain scroll position
+            window.scrollTo(0, scrollPosition);
 
             // Update active navigation link
             const activeNavItem = navMenu.querySelector(".active");
