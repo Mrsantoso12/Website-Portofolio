@@ -1,64 +1,65 @@
-// Fix for services section scroll issue
+// Enhanced fix for services section scroll issues
 document.addEventListener('DOMContentLoaded', function() {
     const servicesSection = document.querySelector('.service-section');
-    const serviceItems = document.querySelectorAll('.service-item');
     
-    // Store initial scroll position
-    let lastScrollPosition = window.pageYOffset;
-    
-    // Prevent scroll jump on mobile touch
-    if (window.innerWidth <= 768) {
-        serviceItems.forEach(item => {
-            item.addEventListener('touchstart', function(e) {
-                lastScrollPosition = window.pageYOffset;
-            }, { passive: true });
+    if (!servicesSection) return;
+
+    // Enable smooth scrolling for the section
+    function enableSmoothScroll() {
+        if (window.innerWidth <= 768) {
+            // Remove any scroll-blocking styles
+            document.body.style.overflow = 'auto';
+            servicesSection.style.overflow = 'auto';
             
-            item.addEventListener('touchend', function(e) {
-                // Prevent default only if significant scroll occurred
-                if (Math.abs(window.pageYOffset - lastScrollPosition) > 50) {
-                    e.preventDefault();
-                    window.scrollTo({
-                        top: lastScrollPosition,
-                        behavior: 'auto'
-                    });
-                }
-            });
-        });
+            // Ensure the section is scrollable
+            servicesSection.style.height = 'auto';
+            servicesSection.style.minHeight = '100vh';
+            
+            // Remove any transform styles that might interfere with scrolling
+            const elements = servicesSection.getElementsByTagName('*');
+            for (let element of elements) {
+                element.style.transform = 'none';
+                element.style.webkitTransform = 'none';
+            }
+        }
     }
-    
-    // Disable automatic scroll restoration
-    if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'manual';
-    }
-    
-    // Handle intersection observer for services section
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.1
-    };
-    
-    const servicesObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                // When services section comes into view
-                document.body.style.overflow = 'auto';
+
+    // Initialize scroll fix
+    enableSmoothScroll();
+
+    // Handle orientation change and resize
+    window.addEventListener('resize', enableSmoothScroll);
+    window.addEventListener('orientationchange', enableSmoothScroll);
+
+    // Prevent any scroll blocking behaviors
+    servicesSection.addEventListener('touchmove', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
+
+    // Fix for iOS momentum scrolling
+    servicesSection.style.webkitOverflowScrolling = 'touch';
+
+    // Ensure section is properly sized after content loads
+    window.addEventListener('load', function() {
+        servicesSection.style.height = 'auto';
+        const sectionHeight = servicesSection.scrollHeight;
+        servicesSection.style.minHeight = sectionHeight + 'px';
+    });
+
+    // Remove any scroll prevention on section focus
+    servicesSection.addEventListener('focus', function() {
+        document.body.style.overflow = 'auto';
+    }, true);
+
+    // Handle smooth anchor scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            if (this.getAttribute('href') === '#services') {
+                e.preventDefault();
+                servicesSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
             }
         });
-    }, observerOptions);
-    
-    if (servicesSection) {
-        servicesObserver.observe(servicesSection);
-    }
-    
-    // Prevent unwanted scroll when touching service items
-    serviceItems.forEach(item => {
-        item.addEventListener('touchmove', function(e) {
-            if (window.innerWidth <= 768) {
-                if (e.touches.length === 1) {
-                    e.preventDefault();
-                }
-            }
-        }, { passive: false });
     });
 });

@@ -28,25 +28,52 @@
         max-width: 100%;
     }
     
-    /* Stabilize services section on mobile */
+    /* Fix services section scrolling on mobile */
+    .service-section {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+        height: auto;
+        min-height: 100vh;
+        padding-bottom: 30px;
+    }
+    
+    .service-section .container {
+        overflow: visible;
+        height: auto;
+    }
+    
+    .service-section .row {
+        overflow: visible;
+        height: auto;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+    
     .service-section .service-item {
         transform: none !important;
         -webkit-transform: none !important;
         perspective: none !important;
         transition: none !important;
-        touch-action: pan-x pan-y pinch-zoom;
-        -webkit-overflow-scrolling: touch;
+        touch-action: auto;
         position: relative;
         z-index: 1;
+        height: auto;
+        margin-bottom: 30px;
     }
     
-    .service-section {
-        overflow: hidden;
-        position: relative;
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
+    .service-section .service-item-inner {
+        height: 100%;
+        overflow: visible;
+        transform: none !important;
+    }
+    
+    /* Remove any transform that might interfere with scrolling */
+    .service-section * {
+        transform: none !important;
+        -webkit-transform: none !important;
+        backface-visibility: visible !important;
+        -webkit-backface-visibility: visible !important;
     }
     
     .service-section .service-item-inner {
