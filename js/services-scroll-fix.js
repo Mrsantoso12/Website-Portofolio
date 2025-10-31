@@ -1,65 +1,66 @@
-// Enhanced fix for services section scroll issues
+// Simple fix for services section scroll issues
 document.addEventListener('DOMContentLoaded', function() {
-    const servicesSection = document.querySelector('.service-section');
-    
-    if (!servicesSection) return;
-
-    // Enable smooth scrolling for the section
-    function enableSmoothScroll() {
+    // Disable all animations and transitions on mobile
+    function disableEffects() {
         if (window.innerWidth <= 768) {
-            // Remove any scroll-blocking styles
+            document.body.classList.add('mobile-device');
+            
+            // Remove all transform effects from service items
+            document.querySelectorAll('.service-item').forEach(item => {
+                item.style.transform = 'none';
+                item.style.transition = 'none';
+                if (item._vanilla) {
+                    item._vanilla.destroy();
+                }
+            });
+
+            // Ensure proper overflow settings
             document.body.style.overflow = 'auto';
-            servicesSection.style.overflow = 'auto';
+            document.body.style.height = 'auto';
             
-            // Ensure the section is scrollable
-            servicesSection.style.height = 'auto';
-            servicesSection.style.minHeight = '100vh';
-            
-            // Remove any transform styles that might interfere with scrolling
-            const elements = servicesSection.getElementsByTagName('*');
-            for (let element of elements) {
-                element.style.transform = 'none';
-                element.style.webkitTransform = 'none';
+            // Reset any problematic styles
+            const servicesSection = document.querySelector('.service-section');
+            if (servicesSection) {
+                servicesSection.style.position = 'relative';
+                servicesSection.style.overflow = 'visible';
+                servicesSection.style.height = 'auto';
             }
         }
     }
 
-    // Initialize scroll fix
-    enableSmoothScroll();
+    // Run on load and resize
+    disableEffects();
+    window.addEventListener('resize', disableEffects);
+    window.addEventListener('orientationchange', disableEffects);
 
-    // Handle orientation change and resize
-    window.addEventListener('resize', enableSmoothScroll);
-    window.addEventListener('orientationchange', enableSmoothScroll);
-
-    // Prevent any scroll blocking behaviors
-    servicesSection.addEventListener('touchmove', function(e) {
-        e.stopPropagation();
+    // Add touch handling for mobile
+    let startY;
+    document.addEventListener('touchstart', function(e) {
+        startY = e.touches[0].pageY;
     }, { passive: true });
 
-    // Fix for iOS momentum scrolling
-    servicesSection.style.webkitOverflowScrolling = 'touch';
+    document.addEventListener('touchmove', function(e) {
+        if (!startY) {
+            return;
+        }
 
-    // Ensure section is properly sized after content loads
-    window.addEventListener('load', function() {
-        servicesSection.style.height = 'auto';
-        const sectionHeight = servicesSection.scrollHeight;
-        servicesSection.style.minHeight = sectionHeight + 'px';
-    });
+        const y = e.touches[0].pageY;
+        const direction = startY - y;
+        const scrollable = e.target.closest('.service-section');
+        const scrollTop = scrollable ? scrollable.scrollTop : 0;
+        const scrollHeight = scrollable ? scrollable.scrollHeight : 0;
+        const offsetHeight = scrollable ? scrollable.offsetHeight : 0;
 
-    // Remove any scroll prevention on section focus
-    servicesSection.addEventListener('focus', function() {
-        document.body.style.overflow = 'auto';
-    }, true);
-
-    // Handle smooth anchor scrolling
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            if (this.getAttribute('href') === '#services') {
-                e.preventDefault();
-                servicesSection.scrollIntoView({
-                    behavior: 'smooth'
-                });
+        // Allow default scrolling
+        if (scrollable) {
+            if (direction > 0 && scrollTop < scrollHeight - offsetHeight) {
+                // Scrolling up and not at bottom
+                return;
             }
-        });
-    });
+            if (direction < 0 && scrollTop > 0) {
+                // Scrolling down and not at top
+                return;
+            }
+        }
+    }, { passive: true });
 });
